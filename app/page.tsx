@@ -29,13 +29,18 @@ export default function RootPage() {
     if (!user) return;
 
     setFetching(true);
-    getUserWorkspaces(user.uid).then((ws) => {
-      setWorkspaces(ws);
-      setFetching(false);
-      if (ws.length === 1) {
-        router.replace(`/workspace/${ws[0].id}/board`);
-      }
-    });
+    getUserWorkspaces(user.uid)
+      .then((ws) => {
+        setWorkspaces(ws);
+        setFetching(false);
+        if (ws.length === 1) {
+          router.replace(`/workspace/${ws[0].id}/board`);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load workspaces:", err);
+        setFetching(false);
+      });
   }, [user, loading, timedOut, router]);
 
   async function handleCreateWorkspace(e: React.FormEvent) {
