@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { getUserWorkspaces, createWorkspace } from "@/lib/firebase/workspaces";
+import {
+  getUserWorkspaces,
+  createWorkspace,
+  getWorkspace,
+  addMemberToWorkspace,
+} from "@/lib/firebase/workspaces";
 import { Workspace } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -13,9 +18,15 @@ export default function WorkspacesPage() {
   const router = useRouter();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [fetching, setFetching] = useState(true);
+
   const [showCreate, setShowCreate] = useState(false);
   const [workspaceName, setWorkspaceName] = useState("");
   const [creating, setCreating] = useState(false);
+
+  const [showJoin, setShowJoin] = useState(false);
+  const [joinId, setJoinId] = useState("");
+  const [joining, setJoining] = useState(false);
+  const [joinError, setJoinError] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -36,6 +47,26 @@ export default function WorkspacesPage() {
       router.push(`/workspace/${ws.id}/board`);
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function handleJoinWorkspace(e: React.FormEvent) {
+    e.preventDefault();
+    if (!joinId.trim() || !user) return;
+    setJoinError("");
+    setJoining(true);
+    try {
+      const ws = await getWorkspace(joinId.trim());
+      if (!ws) {
+        setJoinError("Workspace not found. Check the ID and try again.");
+        return;
+      }
+      await addMemberToWorkspace(ws.id, user.uid);
+      router.push(`/workspace/${ws.id}/board`);
+    } catch {
+      setJoinError("Something went wrong. Please try again.");
+    } finally {
+      setJoining(false);
     }
   }
 
@@ -84,10 +115,16 @@ export default function WorkspacesPage() {
           )}
         </div>
 
-        <Button className="w-full" onClick={() => setShowCreate(true)}>
-          + Create New Workspace
-        </Button>
+        <div className="flex gap-2">
+          <Button className="flex-1" onClick={() => setShowCreate(true)}>
+            + Create New Workspace
+          </Button>
+          <Button variant="secondary" className="flex-1" onClick={() => { setJoinId(""); setJoinError(""); setShowJoin(true); }}>
+            Join by ID
+          </Button>
+        </div>
 
+        {/* Create Workspace Modal */}
         <Modal
           isOpen={showCreate}
           onClose={() => setShowCreate(false)}
@@ -113,6 +150,41 @@ export default function WorkspacesPage() {
                 Create
               </Button>
               <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Join Workspace Modal */}
+        <Modal
+          isOpen={showJoin}
+          onClose={() => setShowJoin(false)}
+          title="Join Workspace"
+          size="sm"
+        >
+          <form onSubmit={handleJoinWorkspace} className="space-y-4">
+            <div>
+              <label className="text-xs font-medium text-zinc-400 uppercase tracking-wide">
+                Workspace ID
+              </label>
+              <input
+                autoFocus
+                required
+                className="mt-1 w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-zinc-100 text-sm focus:outline-none focus:border-violet-500 font-mono"
+                placeholder="Paste workspace ID here"
+                value={joinId}
+                onChange={(e) => { setJoinId(e.target.value); setJoinError(""); }}
+              />
+              {joinError && (
+                <p className="mt-1.5 text-xs text-red-400">{joinError}</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" loading={joining}>
+                Join
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setShowJoin(false)}>
                 Cancel
               </Button>
             </div>
