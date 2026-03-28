@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { Workspace } from "@/types";
 import { logout } from "@/lib/firebase/auth";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar } from "@/components/ui/Avatar";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
 
 interface SidebarProps {
   workspace: Workspace | null;
@@ -47,6 +50,7 @@ export function Sidebar({ workspace, workspaceId }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
+  const [showSignOut, setShowSignOut] = useState(false);
 
   return (
     <aside className="w-56 bg-zinc-950 border-r border-zinc-800 flex flex-col h-screen sticky top-0">
@@ -105,12 +109,24 @@ export function Sidebar({ workspace, workspaceId }: SidebarProps) {
           </div>
         )}
         <button
-          onClick={async () => { await logout(); router.replace("/login"); }}
+          onClick={() => setShowSignOut(true)}
           className="w-full text-left text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
         >
           Sign out
         </button>
       </div>
+
+      <Modal isOpen={showSignOut} onClose={() => setShowSignOut(false)} title="Sign out" size="sm">
+        <p className="text-sm text-zinc-400 mb-4">Are you sure you want to sign out?</p>
+        <div className="flex gap-2">
+          <Button onClick={async () => { await logout(); router.replace("/login"); }}>
+            Sign out
+          </Button>
+          <Button variant="ghost" onClick={() => setShowSignOut(false)}>
+            Cancel
+          </Button>
+        </div>
+      </Modal>
     </aside>
   );
 }
