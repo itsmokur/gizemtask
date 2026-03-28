@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { DragEndEvent, DragOverEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Ticket, TicketStatus, BoardColumn } from "@/types";
@@ -18,6 +18,7 @@ const COLUMN_TITLES: Record<TicketStatus, string> = {
 export function useBoard(workspaceId: string, sprintId: string | null) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const dragOriginalStatus = useRef<Record<string, TicketStatus>>({});
 
   // Subscribe to real-time updates
   useEffect(() => {
@@ -58,6 +59,11 @@ export function useBoard(workspaceId: string, sprintId: string | null) {
     const activeTicket = tickets.find((t) => t.id === activeId);
     if (!activeTicket) return;
 
+    // Save original status before any optimistic update
+    if (!dragOriginalStatus.current[activeId]) {
+      dragOriginalStatus.current[activeId] = activeTicket.status;
+    }
+
     // Determine target column
     const targetColumnId = (["todo", "inprogress", "done"] as TicketStatus[]).includes(
       overId as TicketStatus
@@ -90,6 +96,10 @@ export function useBoard(workspaceId: string, sprintId: string | null) {
       const activeTicket = currentTickets.find((t) => t.id === activeId);
       if (!activeTicket) return;
 
+      // Use original status (before optimistic updates) to detect cross-column moves
+      const originalStatus = dragOriginalStatus.current[activeId] || activeTicket.status;
+      delete dragOriginalStatus.current[activeId];
+
       // Determine target column
       const targetStatus = (["todo", "inprogress", "done"] as TicketStatus[]).includes(
         overId as TicketStatus
@@ -104,7 +114,7 @@ export function useBoard(workspaceId: string, sprintId: string | null) {
 
       let reordered: Ticket[];
 
-      if (activeTicket.status === targetStatus) {
+      if (originalStatus === targetStatus) {
         // Same column — just reorder
         const oldIndex = columnTickets.findIndex((t) => t.id === activeId);
         const newIndex = columnTickets.findIndex((t) => t.id === overId);
