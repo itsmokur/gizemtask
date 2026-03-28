@@ -90,6 +90,7 @@ export function KanbanColumn({
             <AddTicketForm
               workspaceId={workspaceId}
               sprintId={sprintId}
+              columnId={column.id}
               currentCount={column.tickets.length}
               onAdded={() => setAddingTicket(false)}
               onCancel={() => setAddingTicket(false)}

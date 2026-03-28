@@ -74,7 +74,8 @@ export async function createTicket(
   workspaceId: string,
   sprintId: string,
   input: CreateTicketInput,
-  order: number
+  order: number,
+  status: TicketStatus = "todo"
 ): Promise<Ticket> {
   const ticketsRef = collection(
     db,
@@ -88,7 +89,7 @@ export async function createTicket(
   const docRef = await addDoc(ticketsRef, {
     title: input.title,
     description: input.description || "",
-    status: "todo" as TicketStatus,
+    status,
     priority: input.priority,
     assigneeId: input.assigneeId ?? null,
     labels: input.labels || [],

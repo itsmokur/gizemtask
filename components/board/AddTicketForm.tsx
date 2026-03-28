@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Priority, CreateTicketInput } from "@/types";
+import { Priority, CreateTicketInput, TicketStatus } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { createTicket } from "@/lib/firebase/tickets";
 
 interface AddTicketFormProps {
   workspaceId: string;
   sprintId: string;
+  columnId: string;
   currentCount: number;
   onAdded: () => void;
   onCancel: () => void;
@@ -16,6 +17,7 @@ interface AddTicketFormProps {
 export function AddTicketForm({
   workspaceId,
   sprintId,
+  columnId,
   currentCount,
   onAdded,
   onCancel,
@@ -43,7 +45,7 @@ export function AddTicketForm({
           .map((l) => l.trim())
           .filter(Boolean),
       };
-      await createTicket(workspaceId, sprintId, input, currentCount);
+      await createTicket(workspaceId, sprintId, input, currentCount, columnId as TicketStatus);
       onAdded();
     } finally {
       setLoading(false);
