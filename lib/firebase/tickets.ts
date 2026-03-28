@@ -46,7 +46,8 @@ export function subscribeToTickets(
     orderBy("order", "asc")
   );
 
-  return onSnapshot(q, (snapshot) => {
+  return onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
+    if (snapshot.metadata.hasPendingWrites) return;
     const tickets = snapshot.docs.map((doc) =>
       toTicket(doc.id, doc.data() as Record<string, unknown>)
     );
