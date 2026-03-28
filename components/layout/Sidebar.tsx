@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Workspace } from "@/types";
 import { logout } from "@/lib/firebase/auth";
 import { useAuth } from "@/context/AuthContext";
+import { getUserWorkspaces } from "@/lib/firebase/workspaces";
 import { Avatar } from "@/components/ui/Avatar";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -51,19 +52,98 @@ export function Sidebar({ workspace, workspaceId }: SidebarProps) {
   const router = useRouter();
   const { user } = useAuth();
   const [showSignOut, setShowSignOut] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userWorkspaces, setUserWorkspaces] = useState<Workspace[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    getUserWorkspaces(user.uid).then(setUserWorkspaces).catch(() => {});
+  }, [user]);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownOpen]);
 
   return (
     <aside className="w-56 bg-zinc-950 border-r border-zinc-800 flex flex-col h-screen sticky top-0">
-      {/* Workspace name */}
-      <div className="px-4 py-5 border-b border-zinc-800">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
-            G
+      {/* Workspace switcher */}
+      <div className="px-4 py-5 border-b border-zinc-800 relative" ref={dropdownRef}>
+        <button
+          onClick={() => setDropdownOpen((prev) => !prev)}
+          className="flex items-center gap-2 w-full group"
+          aria-haspopup="listbox"
+          aria-expanded={dropdownOpen}
+        >
+          <div className="w-7 h-7 bg-violet-600 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {(workspace?.name?.[0] ?? "G").toUpperCase()}
           </div>
-          <span className="text-sm font-semibold text-zinc-200 group-hover:text-white transition-colors truncate">
+          <span className="text-sm font-semibold text-zinc-200 group-hover:text-white transition-colors truncate flex-1 text-left">
             {workspace?.name || "GizemRetro"}
           </span>
-        </Link>
+          <svg
+            className={`w-3.5 h-3.5 text-zinc-500 shrink-0 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {dropdownOpen && (
+          <ul
+            role="listbox"
+            aria-label="Switch workspace"
+            className="absolute left-3 right-3 top-full mt-1 z-50 bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg overflow-hidden py-1"
+          >
+            {userWorkspaces.length === 0 && (
+              <li className="px-3 py-2 text-xs text-zinc-500">No workspaces found</li>
+            )}
+            {userWorkspaces.map((ws) => {
+              const isActive = ws.id === workspaceId;
+              return (
+                <li key={ws.id} role="option" aria-selected={isActive}>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      router.push(`/workspace/${ws.id}/board`);
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                      isActive
+                        ? "text-violet-300 bg-violet-600/20"
+                        : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+                    }`}
+                  >
+                    <div className="w-5 h-5 bg-violet-600 rounded flex items-center justify-center text-white text-xs font-bold shrink-0">
+                      {ws.name[0].toUpperCase()}
+                    </div>
+                    <span className="truncate flex-1 text-left">{ws.name}</span>
+                    {isActive && (
+                      <svg
+                        className="w-3.5 h-3.5 shrink-0 text-violet-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
 
       {/* Navigation */}
