@@ -10,6 +10,14 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  function handleCopyId() {
+    if (!workspace?.id) return;
+    navigator.clipboard.writeText(workspace.id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   // Initialize name input once workspace loads
   if (!name && workspace?.name) {
@@ -69,12 +77,20 @@ export default function SettingsPage() {
 
       <div className="mt-6 bg-zinc-900 border border-zinc-800 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-zinc-200 mb-1">Workspace ID</h2>
-        <p className="text-xs text-zinc-500 font-mono break-all">
-          {workspace?.id}
+        <p className="text-xs text-zinc-500 mb-3">
+          Share this ID with teammates so they can join via &quot;Join by ID&quot;.
         </p>
-        <p className="text-xs text-zinc-600 mt-2">
-          Share this ID with teammates to add them to the workspace (feature coming soon).
-        </p>
+        <div className="flex items-center gap-2">
+          <code className="flex-1 text-xs text-zinc-300 font-mono bg-zinc-800 rounded-lg px-3 py-2 break-all">
+            {workspace?.id}
+          </code>
+          <button
+            onClick={handleCopyId}
+            className="shrink-0 text-xs px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+          >
+            {copied ? "Copied!" : "Copy"}
+          </button>
+        </div>
       </div>
     </div>
   );
