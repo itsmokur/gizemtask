@@ -25,7 +25,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await registerWithEmail(email, password, displayName);
-      router.replace("/");
+      router.replace("/workspaces");
     } catch {
       setError("Registration failed. This email may already be in use.");
     } finally {
@@ -38,7 +38,7 @@ export default function RegisterPage() {
     setGoogleLoading(true);
     try {
       await loginWithGoogle();
-      router.replace("/");
+      router.replace("/workspaces");
     } catch {
       setError("Google sign-in failed.");
     } finally {

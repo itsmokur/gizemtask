@@ -20,7 +20,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await loginWithEmail(email, password);
-      router.replace("/");
+      router.replace("/workspaces");
     } catch {
       setError("Invalid email or password.");
     } finally {
@@ -33,7 +33,7 @@ export default function LoginPage() {
     setGoogleLoading(true);
     try {
       await loginWithGoogle();
-      router.replace("/");
+      router.replace("/workspaces");
     } catch {
       setError("Google sign-in failed.");
     } finally {

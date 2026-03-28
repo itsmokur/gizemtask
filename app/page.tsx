@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { getUserWorkspaces } from "@/lib/firebase/workspaces";
 
 export default function RootPage() {
   const { user, loading } = useAuth();
@@ -20,18 +19,9 @@ export default function RootPage() {
 
     if (!user) {
       router.replace("/login");
-      return;
+    } else {
+      router.replace("/workspaces");
     }
-
-    getUserWorkspaces(user.uid)
-      .then((ws) => {
-        if (ws.length > 0) {
-          router.replace(`/workspace/${ws[0].id}/board`);
-        }
-      })
-      .catch(() => {
-        router.replace("/login");
-      });
   }, [user, loading, timedOut, router]);
 
   return (
