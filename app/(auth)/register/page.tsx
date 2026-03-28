@@ -53,7 +53,7 @@ export default function RegisterPage() {
           <div className="w-12 h-12 bg-violet-600 rounded-xl flex items-center justify-center text-white text-xl font-bold mx-auto mb-3">
             G
           </div>
-          <h1 className="text-2xl font-bold text-zinc-100">GizemRetro</h1>
+          <h1 className="text-2xl font-bold text-zinc-100">GizemTask</h1>
           <p className="text-sm text-zinc-500 mt-1">Create your account</p>
         </div>
 

@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "GizemRetro — Sprint Board",
+  title: "GizemTask — Sprint Board",
   description: "Kanban-based sprint board for agile teams",
 };
 

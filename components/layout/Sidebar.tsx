@@ -86,7 +86,7 @@ export function Sidebar({ workspace, workspaceId }: SidebarProps) {
             {(workspace?.name?.[0] ?? "G").toUpperCase()}
           </div>
           <span className="text-sm font-semibold text-zinc-200 group-hover:text-white transition-colors truncate flex-1 text-left">
-            {workspace?.name || "GizemRetro"}
+            {workspace?.name || "GizemTask"}
           </span>
           <svg
             className={`w-3.5 h-3.5 text-zinc-500 shrink-0 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
