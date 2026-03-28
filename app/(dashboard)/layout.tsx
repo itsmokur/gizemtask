@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
@@ -12,14 +12,24 @@ export default function DashboardLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [timedOut, setTimedOut] = useState(false);
+
+  // If auth takes too long (e.g. Firebase not reachable), redirect to login
+  useEffect(() => {
+    const t = setTimeout(() => setTimedOut(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
     }
-  }, [user, loading, router]);
+    if (timedOut && !user) {
+      router.replace("/login");
+    }
+  }, [user, loading, router, timedOut]);
 
-  if (loading) {
+  if (loading && !timedOut) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950">
         <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
