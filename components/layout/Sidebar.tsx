@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Workspace } from "@/types";
 import { logout } from "@/lib/firebase/auth";
 import { useAuth } from "@/context/AuthContext";
@@ -45,6 +45,7 @@ const NAV_ITEMS = [
 
 export function Sidebar({ workspace, workspaceId }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useAuth();
 
   return (
@@ -104,7 +105,7 @@ export function Sidebar({ workspace, workspaceId }: SidebarProps) {
           </div>
         )}
         <button
-          onClick={() => logout()}
+          onClick={async () => { await logout(); router.replace("/login"); }}
           className="w-full text-left text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
         >
           Sign out
