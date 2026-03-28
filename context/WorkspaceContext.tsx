@@ -10,6 +10,7 @@ import {
 import { Workspace, Sprint } from "@/types";
 import { getWorkspace } from "@/lib/firebase/workspaces";
 import { getSprints } from "@/lib/firebase/sprints";
+import { useAuth } from "@/context/AuthContext";
 
 interface WorkspaceContextType {
   workspace: Workspace | null;
@@ -30,6 +31,7 @@ export function WorkspaceProvider({
   children: ReactNode;
   workspaceId: string;
 }) {
+  const { user, loading: authLoading } = useAuth(); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
@@ -55,9 +57,10 @@ export function WorkspaceProvider({
   }
 
   useEffect(() => {
+    if (authLoading || !user) return;
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId]);
+  }, [workspaceId, authLoading, user]);
 
   const activeSprint = sprints.find((s) => s.status === "active") || null;
 
